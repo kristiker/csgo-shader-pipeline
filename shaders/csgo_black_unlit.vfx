@@ -1,0 +1,415 @@
+//=================================================================================================
+// Reconstructed with Source 2 Viewer 6.0.0.0 - https://valveresourceformat.github.io
+//=================================================================================================
+HEADER
+{
+    Description = "Just renders black";
+    DevShader = false;
+    Version = 1;
+}
+
+MODES
+{
+    CsgoForward();
+    Depth("csgo_depth_only.vfx");
+    ToolsVis(S_MODE_TOOLS_VIS);
+    ToolsWireframe("csgo_tools_wireframe.vfx");
+}
+
+FEATURES
+{
+    Feature( F_DO_NOT_CAST_SHADOWS, 0..1, "Shadows" );
+    Feature( F_RENDER_BACKFACES, 0..1, "2-Sided Rendering" );
+    Feature( F_DONT_FLIP_BACKFACE_NORMALS, 0..1, "2-Sided Rendering" );
+    Feature( F_DISABLE_Z_BUFFERING, 0..1, "Z-Buffering" );
+    Feature( F_DISABLE_Z_PREPASS, 0..1, "Z-Prepass" );
+    FeatureRule( Requires1( F_DONT_FLIP_BACKFACE_NORMALS, F_RENDER_BACKFACES ), "Only applies to backfaces" );
+}
+
+COMMON
+{
+    #include "system.fxc"
+    
+    cbuffer PerViewConstantBufferCsgo_t
+    {
+        bool4 g_bFogTypeEnabled;
+        bool4 g_bOtherFxEnabled;
+        bool4 g_bOtherEnabled2;
+        DWORD g_tBlueNoiseTextureIndex;
+        DWORD g_tBRDFLookupTextureIndex;
+        DWORD g_tCubemapFogTextureIndex;
+        DWORD g_tDynamicAmbientOcclusionTextureIndex;
+        DWORD g_tDynamicAmbientOcclusionDepthIndex;
+        DWORD g_tSSAOIndex;
+        DWORD g_tParticleShadowBufferIndex;
+        DWORD g_tZeroth_MomentIndex;
+        DWORD g_tMomentsIndex;
+        DWORD g_tExtra_MomentIndex;
+        DWORD g_tLowShaderQualityFallbackCubemap;
+        DWORD g_tUnused0;
+        float2 g_vBlueNoiseMask;
+        DWORD g_tUnused1;
+        DWORD g_tUnused2;
+        float4x4 g_matSkyboxToWorld;
+        float2 g_vAoProxyDepthInvTextureSize;
+        float g_flAoProxyDownres;
+        float g_flUnusedAfterAo;
+        float4 g_vWindDirection;
+        float4 g_vWindStrengthFreqMulHighStrength;
+        float4 g_vInteractionProjectionOrigin;
+        float4 g_vInteractionVolumeInvExtents;
+        float4 g_vInteractionTriggerVolumeInvMins;
+        float4 g_vInteractionTriggerVolumeWorldToVolumeScale;
+        float4 g_vGradientFogBiasAndScale;
+        float4 m_vGradientFogExponents;
+        float4 g_vGradientFogColor_Opacity;
+        float4 g_vGradientFogCullingParams;
+        float4 g_vCubeFog_Offset_Scale_Bias_Exponent;
+        float4 g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip;
+        float4x4 g_matvCubeFogSkyWsToOs;
+        float4 g_vCubeFogCullingParams_MaxOpacity;
+        float4 g_vCubeFog_ExposureBias;
+        float4 g_vHighPrecisionLightingOffsetWs;
+        float g_flEnvMapPositionBias;
+        float g_flScopeMagnification;
+        float g_flEffectStrength;
+        float g_flMixedResolutionViewportScale;
+        float g_flMBOIT_Overestimation;
+        float g_flMBOIT_Bias;
+        float g_flMBOIT_Scale;
+        float g_flToolsVisCubemapReflectionRoughness;
+        float g_flCablePixelRadiusScale;
+        float g_flRealTime;
+        float g_flBeginMixingRoughness;
+    };
+    
+    cbuffer PerViewConstantBuffer_t
+    {
+        float4x4 g_matWorldToProjection;
+        float4x4 g_matProjectionToWorld;
+        float4x4 g_matWorldToView;
+        float4x4 g_matViewToProjection;
+        float4 g_vInvProjRow3;
+        float4 g_vClipPlane0;
+        float g_flToneMapScalarLinear;
+        float g_flInvToneMapScalarLinear;
+        float g_fInvViewportZRange;
+        float g_fMinViewportZScaled;
+        float3 g_vCameraPositionWs;
+        float g_flViewportMinZ;
+        float3 g_vCameraDirWs;
+        float g_flViewportMaxZ;
+        float3 g_vCameraUpDirWs;
+        float g_flTime;
+        float3 g_vDepthPsToVsConversion;
+        float g_flNearPlane;
+        float g_flFarPlane;
+        float g_flLightBinnerFarPlane;
+        float2 g_vInvViewportSize;
+        float2 g_vViewportToGBufferRatio;
+        float2 g_vMorphTextureAtlasSize;
+        float4 g_vInvGBufferSize;
+        float2 g_vViewportOffset;
+        float2 g_vViewportSize;
+        float2 g_vRenderTargetSize;
+        float g_flFogBlendToBackground;
+        float g_flHenyeyGreensteinCoeff;
+        float3 g_vFogColor;
+        float g_flNegFogStartOverFogRange;
+        float g_flInvFogRange;
+        float g_flFogMaxDensity;
+        float g_flFogExponent;
+        float g_flMod2xIdentity;
+        int g_nMSAASampleCount;
+        float g_flInvMSAASampleCount;
+        DWORD g_tCompositeMorphAtlasTextureIndex;
+        DWORD _pad0;
+        float4 g_vFrameBufferCopyInvSizeAndUvScale;
+        float4 g_vCameraAngles;
+        float4 g_vWorldToCameraOffset;
+        float4x4 g_matPrevWorldToProjection;
+        float4 g_vPrevWorldToCameraOffset;
+        float4 g_vPerViewConstantExtraData0;
+        float4 g_vPerViewConstantExtraData1;
+        float4 g_vPerViewConstantExtraData2;
+        float4 g_vPerViewConstantExtraData3;
+    };
+    
+    struct VS_INPUT
+    {
+        float4 vBlendIndices          : BLENDINDICES0  < Semantic( BlendIndices ); >;                  // D_SKINNING=1
+        float4 vBlendWeight           : BLENDWEIGHT0   < Semantic( BlendWeight ); >;                   // D_SKINNING=1
+        float4 vNormalOs              : NORMAL0        < Semantic( OptionallyCompressedTangentFrame ); >;
+        float3 vPositionOs            : POSITION0      < Semantic( PosXyz ); >;                       
+        float2 vTexCoord              : TEXCOORD0      < Semantic( LowPrecisionUv ); >;               
+        float2 nTransformBufferOffset : TEXCOORD13     < Semantic( InstanceTransformUv ); >;          
+    };
+}
+
+VS
+{
+    StaticCombo( S_MOLTEN_VK, 0..1 );
+    StaticCombo( S_MODE_TOOLS_VIS, 0..1 );
+    DynamicCombo( D_SKINNING, 0..1 );
+    DynamicCombo( D_COMPRESSED_NORMALS_AND_TANGENTS, 0..1 );
+    
+    ExternalDescriptorSet g_globalLateBoundBindlessSet < Attribute("g_globalLateBoundBindlessSet"); >;
+    CreateTexture2DWithoutSampler(g_instanceBuffer) < Attribute("InstanceBuffer"); SrgbRead(false); >;
+    ExternalDescriptorSet g_lightBinnerGpuSet < Attribute("g_lightBinnerGpuSet"); >;
+    CreateTexture2DWithoutSampler(g_transformBuffer) < Attribute("TransformBuffer"); SrgbRead(false); >;
+    
+    // SPIR-V source (4028), SPVC_BACKEND_HLSL reflection with SPIRV-Cross by KhronosGroup
+    // Source 2 Viewer 6.0.0.0 - https://valveresourceformat.github.io
+    
+    struct _1119
+    {
+        row_major float3x4 _m0;
+    };
+    
+    struct _2265
+    {
+        uint _m0[8];
+    };
+    
+    cbuffer _1308_4459 : register(b15, space0)
+    {
+        column_major float4x4 _4459_m0 : packoffset(c0);
+        float4 _4459_m1 : packoffset(c17);
+        float4 _4459_m2 : packoffset(c33);
+    };
+    
+    cbuffer _1017_5037 : register(b18, space0)
+    {
+        float4 _5037_m0 : packoffset(c30);
+    };
+    
+    ByteAddressBuffer _5815 : register(t30, space2);
+    ByteAddressBuffer _5203 : register(t32, space2);
+    
+    static float4 gl_Position;
+    static float gl_ClipDistance[1];
+    static float3 _6017;
+    static float2 _5759;
+    static float4 _5837;
+    static uint _3984;
+    static float3 _3486;
+    static float3 _3487;
+    static float4 _3488;
+    static float4 _3490;
+    static float _3495;
+    static uint2 _5072;
+    
+    struct SPIRV_Cross_Input
+    {
+        float3 _6017 : TEXCOORD0;
+        float2 _5759 : TEXCOORD1;
+        float4 _5837 : TEXCOORD2;
+        uint _3984 : TEXCOORD3;
+    };
+    
+    struct SPIRV_Cross_Output
+    {
+        float3 _3486 : TEXCOORD0;
+        float3 _3487 : TEXCOORD1;
+        float4 _3488 : TEXCOORD2;
+        float4 _3490 : TEXCOORD3;
+        float _3495 : TEXCOORD4;
+        nointerpolation uint2 _5072 : TEXCOORD5;
+        float4 gl_Position : SV_Position;
+        float gl_ClipDistance0 : SV_ClipDistance0;
+    };
+    
+    void vert_main()
+    {
+        _2265 _21981;
+        [unroll]
+        for (int _2ident = 0; _2ident < 8; _2ident++)
+        {
+            _21981._m0[_2ident] = _5203.Load(_2ident * 4 + _3984 * 32 + 0);
+        }
+        float3x4 _9586 = asfloat(uint3x4(_5815.Load4(_21981._m0[1] * 48 + 0), _5815.Load4(_21981._m0[1] * 48 + 16), _5815.Load4(_21981._m0[1] * 48 + 32)));
+        _2265 _13589;
+        [unroll]
+        for (int _3ident = 0; _3ident < 8; _3ident++)
+        {
+            _13589._m0[_3ident] = _5203.Load(_3ident * 4 + _3984 * 32 + 0);
+        }
+        float4 _22293 = float4(float((_13589._m0[0] >> 0u) & 255u), float((_13589._m0[0] >> 8u) & 255u), float((_13589._m0[0] >> 16u) & 255u), float(_13589._m0[0] >> 24u)) * 0.0039215688593685626983642578125f;
+        float3 _7940 = _22293.xyz;
+        float3 _20064 = _7940 * 0.077399380505084991455078125f.xxx;
+        float3 _24533 = pow(mad(_7940, 0.947867333889007568359375f.xxx, 0.0521326996386051177978515625f.xxx), 2.400000095367431640625f.xxx);
+        float3 _21918 = float3((_22293.x <= 0.040449999272823333740234375f) ? _20064.x : _24533.x, (_22293.y <= 0.040449999272823333740234375f) ? _20064.y : _24533.y, (_22293.z <= 0.040449999272823333740234375f) ? _20064.z : _24533.z);
+        float3 _21242 = mul(_9586, float4(_6017, 1.0f));
+        float4 _13745 = float4(_21242, 1.0f);
+        float4 _16057 = mul(_4459_m0, _13745 + (_4459_m2 * 1.0f));
+        float _19081 = dot(_13745, _4459_m1);
+        _3486 = _21242 - _5037_m0.xyz;
+        _3487 = normalize(mul(_9586, float4(_5837.xyz, 0.0f)));
+        _3488 = _5759.xyxy;
+        _3490 = float4(_21918.x, _21918.y, _21918.z, _22293.w);
+        _3495 = _19081;
+        _5072 = uint2(_13589._m0[3] & 65535u, (_13589._m0[4] >> 4u) & 511u);
+        _16057.y = -_16057.y;
+        gl_Position = _16057;
+        gl_ClipDistance[0u] = _19081;
+    }
+    
+    SPIRV_Cross_Output main(SPIRV_Cross_Input stage_input)
+    {
+        _6017 = stage_input._6017;
+        _5759 = stage_input._5759;
+        _5837 = stage_input._5837;
+        _3984 = stage_input._3984;
+        vert_main();
+        SPIRV_Cross_Output stage_output;
+        stage_output.gl_Position = gl_Position;
+        stage_output.gl_ClipDistance0.x = gl_ClipDistance[0];
+        stage_output._3486 = _3486;
+        stage_output._3487 = _3487;
+        stage_output._3488 = _3488;
+        stage_output._3490 = _3490;
+        stage_output._3495 = _3495;
+        stage_output._5072 = _5072;
+        return stage_output;
+    }
+    
+    // ---------  SPIRV -> HLSL end  --------- 
+    
+    
+    
+    BoolAttribute(CanBatchWithDynamicShaderConstants, true);
+    BoolAttribute(SupportsAggregateInstancing, true);
+    
+}
+
+PS
+{
+    StaticCombo( S_MOLTEN_VK, 0..1 );
+    StaticCombo( S_MODE_TOOLS_VIS, 0..1 );
+    
+    RenderState(BackStencilFunc, F_RENDER_BACKFACES ? 5 : 7);
+    RenderState(CullMode, (F_RENDER_BACKFACES || exists(UNKNOWN[2f61b340])) ? 0 : 1);
+    RenderState(DepthEnable, F_DISABLE_Z_BUFFERING ? 0 : 1);
+    RenderState(DepthWriteEnable, F_DISABLE_Z_BUFFERING ? 0 : 1);
+    RenderState(StencilEnable, 1);
+    RenderState(StencilFunc, 5);
+    RenderState(StencilReadMask, 1);
+    RenderState(StencilRef, 3);
+    RenderState(StencilWriteMask, 254);
+    bool g_bHighlightDeprecated < Attribute("g_bHighlightDeprecated"); UiType(CheckBox); >;
+    bool g_bIsDeprecated < Attribute("bIsDeprecated"); UiType(CheckBox); >;
+    float g_fToolsVisHeightTint < Attribute("g_fToolsVisHeightTint"); UiType(Slider); >;
+    float g_fToolsVisMaxHeightRange < Default(1); Attribute("g_fToolsVisMaxHeightRange"); UiType(Slider); >;
+    ExternalDescriptorSet g_globalLateBoundBindlessSet < Attribute("g_globalLateBoundBindlessSet"); >;
+    ExternalDescriptorSet g_lightBinnerGpuSet < Attribute("g_lightBinnerGpuSet"); >;
+    int g_nToolsVisMode < Attribute("g_nToolsVisMode"); UiType(Slider); >;
+    CreateTexture2DWithoutSampler(g_tFogCubeTexture) < Attribute("CubemapFogTexture"); SrgbRead(true); >;
+    float3 g_vFlatOverlayColor < Default2(1, 0); Attribute("FlatOverlayColor"); UiType(VectorText); >;
+    float4 g_vShaderIDColor < UiType(VectorText); >;
+    
+    // Fog
+    bool g_bFogEnabled < Default(1); UiType(CheckBox); UiGroup("Fog"); >;
+    
+    // SPIR-V source (4684), SPVC_BACKEND_HLSL reflection with SPIRV-Cross by KhronosGroup
+    // Source 2 Viewer 6.0.0.0 - https://valveresourceformat.github.io
+    
+    cbuffer _981_3694 : register(b0, space0)
+    {
+        uint _3694_m0 : packoffset(c0.z);
+    };
+    
+    cbuffer _1007_4459 : register(b1, space0)
+    {
+        float3 _4459_m0 : packoffset(c19);
+    };
+    
+    cbuffer _2916_5037 : register(b4, space0)
+    {
+        float4 _5037_m0 : packoffset(c18);
+        float4 _5037_m1 : packoffset(c19);
+        float4 _5037_m2 : packoffset(c20);
+        float4 _5037_m3 : packoffset(c21);
+        float4 _5037_m4 : packoffset(c22);
+        float4 _5037_m5 : packoffset(c23);
+        column_major float4x4 _5037_m6 : packoffset(c24);
+        float4 _5037_m7 : packoffset(c28);
+        float4 _5037_m8 : packoffset(c29);
+        float4 _5037_m9 : packoffset(c30);
+    };
+    
+    SamplerState _4038 : register(s45, space0);
+    TextureCube<float4> _5741 : register(t102, space0);
+    
+    static float3 _5759;
+    static float4 _5482;
+    
+    struct SPIRV_Cross_Input
+    {
+        float3 _5759 : TEXCOORD0;
+    };
+    
+    struct SPIRV_Cross_Output
+    {
+        float4 _5482 : SV_Target0;
+    };
+    
+    void frag_main()
+    {
+        float3 _10061 = _5759 + _5037_m9.xyz;
+        float4 _6805;
+        if (_3694_m0 != 0u)
+        {
+            float _18390;
+            float2 _21493;
+            float3 _18406 = _10061 - _4459_m0;
+            float3 _22821;
+            do
+            {
+                _21493 = _18406.xy;
+                _18390 = _10061.z;
+                [branch]
+                if ((dot(_21493, _21493) > _5037_m3.x) && ((_18390 * _5037_m3.z) < _5037_m3.y))
+                {
+                    float2 _21390 = clamp(mad(_5037_m0.zw, float2(length(_21493), _18390), _5037_m0.xy), 0.0f.xx, 1.0f.xx);
+                    float _11897 = (pow(_21390.x, _5037_m1.x) * pow(_21390.y, _5037_m1.y)) * _5037_m2.w;
+                    _22821 = lerp(0.0f.xxx, float4(_5037_m2.xyz, _11897).xyz, _11897.xxx);
+                    break;
+                }
+                _22821 = 0.0f.xxx;
+                break;
+            } while(false);
+            float3 _22859;
+            do
+            {
+                if ((dot(_18406, _18406) > _5037_m7.x) && ((_5037_m7.z * _18390) < _5037_m7.y))
+                {
+                    float _16990 = clamp(pow(max(0.0f, mad(length(_21493), _5037_m4.y, _5037_m4.x)), _5037_m4.w), 0.0f, 1.0f) * clamp(pow(max(0.0f, mad(_18390, _5037_m5.y, _5037_m5.x)), _5037_m5.z), 0.0f, 1.0f);
+                    float _8437 = clamp(_16990, 0.0f, 1.0f) * _5037_m7.w;
+                    _22859 = lerp(_22821.xyz, float4((_5741.SampleLevel(_4038, normalize(mul(float4(_18406, 0.0f), _5037_m6).xyz), _5037_m5.w * clamp(mad(-_16990, _5037_m4.z, 1.0f), 0.0f, 1.0f)) * _5037_m8.x).xyz, _8437).xyz, _8437.xxx);
+                    break;
+                }
+                _22859 = _22821.xyz;
+                break;
+            } while(false);
+            _6805 = float4(_22859.x, _22859.y, _22859.z, float4(0.0f, 0.0f, 0.0f, 1.0f).w);
+        }
+        else
+        {
+            _6805 = float4(0.0f, 0.0f, 0.0f, 1.0f);
+        }
+        _5482 = _6805;
+    }
+    
+    SPIRV_Cross_Output main(SPIRV_Cross_Input stage_input)
+    {
+        _5759 = stage_input._5759;
+        frag_main();
+        SPIRV_Cross_Output stage_output;
+        stage_output._5482 = _5482;
+        return stage_output;
+    }
+    
+    // ---------  SPIRV -> HLSL end  --------- 
+    BoolAttribute(unlit, true);
+    
+}
