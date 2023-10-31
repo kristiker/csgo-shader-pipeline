@@ -36,6 +36,15 @@ COMMON
     {
         #include "common/vertexinput.hlsl"
     };
+
+    struct PS_INPUT
+    {
+    };
+
+    struct PS_OUTPUT
+    {
+        float4 vColor : SV_Target0;
+    };
 }
 
 VS
@@ -44,11 +53,6 @@ VS
     StaticCombo( S_MODE_TOOLS_VIS, 0..1 );
 
     #include "common/vertex.hlsl"
-
-    ExternalDescriptorSet g_globalLateBoundBindlessSet < Attribute("g_globalLateBoundBindlessSet"); >;
-    CreateTexture2DWithoutSampler(g_instanceBuffer) < Attribute("InstanceBuffer"); SrgbRead(false); >;
-    ExternalDescriptorSet g_lightBinnerGpuSet < Attribute("g_lightBinnerGpuSet"); >;
-    CreateTexture2DWithoutSampler(g_transformBuffer) < Attribute("TransformBuffer"); SrgbRead(false); >;
 
     // SPIR-V source (4028), SPVC_BACKEND_HLSL reflection with SPIRV-Cross by KhronosGroup
     // Source 2 Viewer 6.0.0.0 - https://valveresourceformat.github.io
@@ -60,9 +64,9 @@ VS
         float4 g_vWorldToCameraOffset : packoffset(c33);
     };
 
-    cbuffer _1017_5037 : register(b18, space0)
+    cbuffer PerViewConstantBufferCsgo_t : register(b18, space0)
     {
-        float4 _5037_m0 : packoffset(c30);
+        float4 g_vHighPrecisionLightingOffsetWs : packoffset(c30);
     };
 
     ByteAddressBuffer _5815 : register(t30, space2);
@@ -125,7 +129,7 @@ VS
         float4 _13745 = float4(_21242, 1.0f);
         float4 _16057 = mul(g_matWorldToProjection, _13745 + (g_vWorldToCameraOffset * 1.0f));
         float _19081 = dot(_13745, g_vClipPlane0);
-        _3486 = _21242 - _5037_m0.xyz;
+        _3486 = _21242 - g_vHighPrecisionLightingOffsetWs.xyz;
         _3487 = normalize(mul(_9586, float4(_5837.xyz, 0.0f)));
         _3488 = _5759.xyxy;
         _3490 = float4(_21918.x, _21918.y, _21918.z, _22293.w);
@@ -207,7 +211,7 @@ PS
 
     cbuffer _2916_5037 : register(b4, space0)
     {
-        float4 _5037_m0 : packoffset(c18);
+        float4 g_vHighPrecisionLightingOffsetWs : packoffset(c18);
         float4 _5037_m1 : packoffset(c19);
         float4 _5037_m2 : packoffset(c20);
         float4 _5037_m3 : packoffset(c21);
@@ -239,6 +243,7 @@ PS
     {
         float3 _10061 = _5759 + _5037_m9.xyz;
         float4 _6805;
+        // TODO: into fogging.hlsl
         if (g_bFogEnabled != 0u)
         {
             float _18390;
@@ -252,7 +257,7 @@ PS
                 [branch]
                 if ((dot(_21493, _21493) > _5037_m3.x) && ((_18390 * _5037_m3.z) < _5037_m3.y))
                 {
-                    float2 _21390 = clamp(mad(_5037_m0.zw, float2(length(_21493), _18390), _5037_m0.xy), 0.0f.xx, 1.0f.xx);
+                    float2 _21390 = clamp(mad(g_vHighPrecisionLightingOffsetWs.zw, float2(length(_21493), _18390), g_vHighPrecisionLightingOffsetWs.xy), 0.0f.xx, 1.0f.xx);
                     float _11897 = (pow(_21390.x, _5037_m1.x) * pow(_21390.y, _5037_m1.y)) * _5037_m2.w;
                     _22821 = lerp(0.0f.xxx, float4(_5037_m2.xyz, _11897).xyz, _11897.xxx);
                     break;
@@ -282,13 +287,16 @@ PS
         _5482 = _6805;
     }
 
-    SPIRV_Cross_Output main(SPIRV_Cross_Input stage_input)
+    PS_OUTPUT MainPs(PS_INPUT i)
     {
-        _5759 = stage_input._5759;
-        frag_main();
-        SPIRV_Cross_Output stage_output;
-        stage_output._5482 = _5482;
-        return stage_output;
+        PS_OUTPUT o;
+        o.vColor = float4(0, 0, 0, 1);
+        if (g_bFogEnabled)
+        {
+            ApplyFog(o.vColor);
+        }
+
+        return o;
     }
 
     // ---------  SPIRV -> HLSL end  ---------
