@@ -1,10 +1,8 @@
-//=================================================================================================
-// Reconstructed with Source 2 Viewer 6.0.0.0 - https://valveresourceformat.github.io
-//=================================================================================================
 HEADER
 {
     Description = "Just renders black";
     Version = 1;
+    CompileTargets = ( IS_SM_50 && ( PC || VULKAN ) );
 }
 
 MODES
@@ -85,7 +83,6 @@ VS
     
         InstanceData_t extraShaderData = DecodePackedInstanceData(instanceData);
         float3 vTint = SrgbGammaToLinear(extraShaderData.vTint.xyz);
-
         float3 vPositionWs = mul(mTransform, float4(i.vPositionOs, 1.0f));
 
         PS_INPUT o;
@@ -127,15 +124,15 @@ PS
     // Fog
     bool g_bFogEnabled < Default(1); UiType(CheckBox); UiGroup("Fog"); >;
 
-/*
-    cbuffer _Globals_ : register(b0, space0)
-    {
-        uint g_bFogEnabled : packoffset(c0.z);
-    };
+    /*
+        cbuffer _Globals_ : register(b0, space0)
+        {
+            uint g_bFogEnabled : packoffset(c0.z);
+        };
 
-    cbuffer PerViewConstantBuffer_t : register(b1, space0);
-    cbuffer PerViewConstantBufferCsgo_t : register(b4, space0);
-*/
+        cbuffer PerViewConstantBuffer_t : register(b1, space0);
+        cbuffer PerViewConstantBufferCsgo_t : register(b4, space0);
+    */
 
     BoolAttribute(unlit, true);
 

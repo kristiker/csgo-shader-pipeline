@@ -493,12 +493,16 @@ float CalculateDistanceToCamera( float3 vPositionWs )
 	return length( g_vCameraPositionWs.xyz - vPositionWs.xyz );
 }
 
-float4 Position3WsToPs(float3 vPositionWs)
-{
+float4 Position4WsToPs(float4 vPositionWs) {
     float4 vPositionPs
-    vPositionPs.xyzw = mul(g_matWorldToProjection, float4(vPositionWs, 1.0f) + (g_vWorldToCameraOffset * 1.0f));
+    vPositionPs.xyzw = mul(g_matWorldToProjection, vPositionWs + (g_vWorldToCameraOffset * 1.0f));
     vPositionPs.y = -vPositionPs.y;
     return vPositionPs;
+}
+
+float4 Position3WsToPs(float3 vPositionWs)
+{
+    return Position4WsToPs(float4(vPositionWs, 1.0f));
 }
 
 #endif
