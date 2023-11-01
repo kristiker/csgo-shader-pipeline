@@ -106,8 +106,24 @@ if (compileProcess == null)
     return -1;
 }
 
-compileProcess.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-compileProcess.ErrorDataReceived += (sender, e) => Console.Error.WriteLine(e.Data);
+var writeQueueSemaphore = new SemaphoreSlim(1, 1);
+compileProcess.OutputDataReceived += (sender, e) =>
+{
+    if (e.Data is null)
+        return;
+
+    writeQueueSemaphore.AvailableWaitHandle.WaitOne();
+    Console.WriteLine(e.Data.Replace(shaderFileName, vfxFilePath));
+};
+compileProcess.ErrorDataReceived += (sender, e) =>
+{
+    if (e.Data is null)
+        return;
+
+    writeQueueSemaphore.AvailableWaitHandle.WaitOne();
+    Console.Error.WriteLine(e.Data.Replace(shaderFileName, vfxFilePath));
+};
+
 compileProcess.BeginOutputReadLine();
 compileProcess.BeginErrorReadLine();
 compileProcess.WaitForExit();
