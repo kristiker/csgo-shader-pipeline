@@ -84,7 +84,7 @@ foreach (var file in Directory.GetFiles(shaders!.FullName, "*.*", SearchOption.A
 
 Debug.Assert(shaderFileName != null);
 
-var compileProcess = Process.Start(new ProcessStartInfo
+var startInfo = new ProcessStartInfo
 {
     FileName = vfxc,
     ArgumentList = { shaderFileName, "-v" },
@@ -92,7 +92,19 @@ var compileProcess = Process.Start(new ProcessStartInfo
     UseShellExecute = false,
     RedirectStandardOutput = true,
     RedirectStandardError = true,
-})!;
+};
+
+foreach (var arg in args.Skip(1))
+{
+    startInfo.ArgumentList.Add(arg);
+}
+
+var compileProcess = Process.Start(startInfo);
+if (compileProcess == null)
+{
+    Console.WriteLine("Failed to start vfxc.exe");
+    return -1;
+}
 
 compileProcess.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
 compileProcess.ErrorDataReceived += (sender, e) => Console.Error.WriteLine(e.Data);
