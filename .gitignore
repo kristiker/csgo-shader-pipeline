@@ -1,5 +1,6 @@
 
 compiler/vfx_csgo/obj/*
 compiler/vfx_csgo/bin/*
+compiler/vfx_csgo/vfx_csgo.exe
 
 compiler/core/shaders/*
