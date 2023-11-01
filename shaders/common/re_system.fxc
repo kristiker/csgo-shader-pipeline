@@ -158,15 +158,29 @@
 
 
 #define TextureAttribute( baseName, value ) string g_texAttr_##baseName<string value = #value; >
-#define CreateTexture2DInRegister( texName, texReg ) \
-    SamplerState texName##_s : register(s##texReg); \
-    Texture2D<float4> ##texName: register(t##texReg)
 
-#define CreateTexture2DInRegisterWithoutSampler( texName, texReg ) Texture2D<float4> ##texName: register(t##texReg)
-#define CreateSampler2DWithRegister( texName, texReg )  SamplerState texName##_s : register(s##texReg)
 #define CreateSampler2D( texName ) SamplerState texName##_s
-#define Tex2D( texName, texUvs ) texName.SampleLevel(texName##_s, ##texUvs.xy, 0)
-#define Tex2DLevel( texName, texUvs, texLevel ) texName.SampleLevel(texName##_s, texUvs.xy, texLevel)
-#define Tex2DLevelOffset( texName, texUvs, texLevel, texOffset ) texName.SampleLevel(texName##_s, texUvs.xy, texLevel, texOffset)
-#define Tex2DOffset( texName, texUvs, texOffset ) texName.SampleLevel(texName##_s, texUvs.xy, 0, texOffset )
-#define Tex2DGrad( texName, texUvs, texDdx, texDdy ) texName.SampleGrad(texName##_s, texUvs.xy, texDdx, texDdy)
+#define CreateTexture2DWithoutSampler( texName ) Texture2D<float4> ##texName
+
+#define CreateTexture2D( texName ) \
+    CreateSampler2D( texName ); \
+    CreateTexture2DWithoutSampler( texName )
+
+#define CreateSampler2DWithRegister( texName, texReg )  CreateSampler2D( texName ) : register(s##texReg)
+#define CreateTexture2DInRegisterWithoutSampler( texName, texReg ) CreateTexture2DWithoutSampler( texName ) : register(t##texReg)
+
+#define CreateTexture2DInRegister( texName, texReg ) \
+    CreateSampler2DWithRegister( texName, texReg ); \
+    CreateTexture2DInRegisterWithoutSampler( texName, texReg )
+
+#define Tex2DS( texName, sampler, texUvs ) texName.SampleLevel(sampler, ##texUvs.xy, 0)
+#define Tex2DLevelS( texName, sampler, texUvs, texLevel ) texName.SampleLevel(sampler, texUvs.xy, texLevel)
+#define Tex2DLevelOffsetS( texName, sampler, texUvs, texLevel, texOffset ) texName.SampleLevel(sampler, texUvs.xy, texLevel, texOffset)
+#define Tex2DOffsetS( texName, sampler, texUvs, texOffset ) texName.SampleLevel(sampler, texUvs.xy, 0, texOffset )
+#define Tex2DGradS( texName, sampler, texUvs, texDdx, texDdy ) texName.SampleGrad(sampler, texUvs.xy, texDdx, texDdy)
+
+#define Tex2D( texName, texUvs ) Tex2DS(texName, texName##_s, ##texUvs.xy, 0)
+#define Tex2DLevel( texName, texUvs, texLevel ) Tex2DLevelS(texName, texName##_s, texUvs.xy, texLevel)
+#define Tex2DLevelOffset( texName, texUvs, texLevel, texOffset ) Tex2DLevelOffsetS(texName, texName##_s, texUvs.xy, texLevel, texOffset)
+#define Tex2DOffset( texName, texUvs, texOffset ) Tex2DOffsetS(texName, texName##_s, texUvs.xy, 0, texOffset )
+#define Tex2DGrad( texName, texUvs, texDdx, texDdy ) Tex2DGradS(texName, texName##_s, texUvs.xy, texDdx, texDdy)

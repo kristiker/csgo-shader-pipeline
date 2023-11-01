@@ -1,5 +1,5 @@
 
-// CreateTexture2DWithoutSampler(g_tFogCubeTexture) < Attribute("CubemapFogTexture"); SrgbRead(true); >;
+// CreateTexture2DInRegisterWithoutSampler(g_tFogCubeTexture, 102) < Attribute("CubemapFogTexture"); SrgbRead(true); >;
 SamplerState g_tFogCubeTexture_s : register(s45, space0);
 TextureCube<float4> g_tFogCubeTexture : register(t102, space0);
 
