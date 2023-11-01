@@ -121,106 +121,39 @@ PS
     ExternalDescriptorSet g_globalLateBoundBindlessSet < Attribute("g_globalLateBoundBindlessSet"); >;
     ExternalDescriptorSet g_lightBinnerGpuSet < Attribute("g_lightBinnerGpuSet"); >;
     int g_nToolsVisMode < Attribute("g_nToolsVisMode"); UiType(Slider); >;
-    CreateTexture2DWithoutSampler(g_tFogCubeTexture) < Attribute("CubemapFogTexture"); SrgbRead(true); >;
     float3 g_vFlatOverlayColor < Default2(1, 0); Attribute("FlatOverlayColor"); UiType(VectorText); >;
     float4 g_vShaderIDColor < UiType(VectorText); >;
 
     // Fog
     bool g_bFogEnabled < Default(1); UiType(CheckBox); UiGroup("Fog"); >;
 
-    // SPIR-V source (4684), SPVC_BACKEND_HLSL reflection with SPIRV-Cross by KhronosGroup
-    // Source 2 Viewer 6.0.0.0 - https://valveresourceformat.github.io
-
+/*
     cbuffer _Globals_ : register(b0, space0)
     {
         uint g_bFogEnabled : packoffset(c0.z);
     };
 
-    cbuffer PerViewConstantBuffer_t : register(b1, space0)
-    {
-        float3 g_vCameraPositionWs : packoffset(c19);
-    };
+    cbuffer PerViewConstantBuffer_t : register(b1, space0);
+    cbuffer PerViewConstantBufferCsgo_t : register(b4, space0);
+*/
 
-    cbuffer PerViewConstantBufferCsgo_t : register(b4, space0)
-    {
-        float4 g_vGradientFogBiasAndScale : packoffset(c18);
-        float4 m_vGradientFogExponents : packoffset(c19);
-        float4 g_vGradientFogColor_Opacity : packoffset(c20);
-        float4 g_vGradientFogCullingParams : packoffset(c21);
-        float4 g_vCubeFog_Offset_Scale_Bias_Exponent : packoffset(c22);
-        float4 g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip : packoffset(c23);
-        column_major float4x4 g_matvCubeFogSkyWsToOs : packoffset(c24);
-        float4 g_vCubeFogCullingParams_MaxOpacity : packoffset(c28);
-        float4 g_vCubeFog_ExposureBias : packoffset(c29);
-        float4 g_vHighPrecisionLightingOffsetWs : packoffset(c30);
-    };
+    BoolAttribute(unlit, true);
 
-    SamplerState _4038 : register(s45, space0);
-    TextureCube<float4> _5741 : register(t102, space0);
-
-    static float4 vColor;
-
-    void frag_main()
-    {
-        float3 _10061 = vPositionWithOffsetWs + g_vHighPrecisionLightingOffsetWs.xyz;
-        float4 _6805;
-        // TODO: into fogging.hlsl
-        if (g_bFogEnabled != 0u)
-        {
-            float _18390;
-            float2 _21493;
-            float3 _18406 = _10061 - g_vCameraPositionWs;
-            float3 _22821;
-            do
-            {
-                _21493 = _18406.xy;
-                _18390 = _10061.z;
-                [branch]
-                if ((dot(_21493, _21493) > g_vGradientFogCullingParams.x) && ((_18390 * g_vGradientFogCullingParams.z) < g_vGradientFogCullingParams.y))
-                {
-                    float2 _21390 = clamp(mad(g_vGradientFogBiasAndScale.zw, float2(length(_21493), _18390), g_vGradientFogBiasAndScale.xy), 0.0f.xx, 1.0f.xx);
-                    float _11897 = (pow(_21390.x, m_vGradientFogExponents.x) * pow(_21390.y, m_vGradientFogExponents.y)) * g_vGradientFogColor_Opacity.w;
-                    _22821 = lerp(0.0f.xxx, float4(g_vGradientFogColor_Opacity.xyz, _11897).xyz, _11897.xxx);
-                    break;
-                }
-                _22821 = 0.0f.xxx;
-                break;
-            } while(false);
-            float3 foggedColor;
-            do
-            {
-                if ((dot(_18406, _18406) > g_vCubeFogCullingParams_MaxOpacity.x) && ((g_vCubeFogCullingParams_MaxOpacity.z * _18390) < g_vCubeFogCullingParams_MaxOpacity.y))
-                {
-                    float _16990 = clamp(pow(max(0.0f, mad(length(_21493), g_vCubeFog_Offset_Scale_Bias_Exponent.y, g_vCubeFog_Offset_Scale_Bias_Exponent.x)), g_vCubeFog_Offset_Scale_Bias_Exponent.w), 0.0f, 1.0f) * clamp(pow(max(0.0f, mad(_18390, g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.y, g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.x)), g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.z), 0.0f, 1.0f);
-                    float _8437 = clamp(_16990, 0.0f, 1.0f) * g_vCubeFogCullingParams_MaxOpacity.w;
-                    foggedColor = lerp(_22821.xyz, float4((_5741.SampleLevel(_4038, normalize(mul(float4(_18406, 0.0f), g_matvCubeFogSkyWsToOs).xyz), g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.w * clamp(mad(-_16990, g_vCubeFog_Offset_Scale_Bias_Exponent.z, 1.0f), 0.0f, 1.0f)) * g_vCubeFog_ExposureBias.x).xyz, _8437).xyz, _8437.xxx);
-                    break;
-                }
-                foggedColor = _22821.xyz;
-                break;
-            } while(false);
-            _6805 = float4(foggedColor.x, foggedColor.y, foggedColor.z, 1.0f);
-        }
-        else
-        {
-            _6805 = float4(0.0f, 0.0f, 0.0f, 1.0f);
-        }
-        vColor = _6805;
-    }
+    #include "common/fogging.hlsl"
 
     PS_OUTPUT MainPs(PS_INPUT i)
     {
+        float3 vPositionWs = vPositionWithOffsetWs + g_vHighPrecisionLightingOffsetWs.xyz;
+        float4 outColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+
         PS_OUTPUT o;
         o.vColor = float4(0, 0, 0, 1);
+
         if (g_bFogEnabled)
         {
-            ApplyFog(o.vColor);
+            ApplyFog(o.vColor.rgb, vPositionWs);
         }
 
         return o;
     }
-
-    // ---------  SPIRV -> HLSL end  ---------
-    BoolAttribute(unlit, true);
-
 }
