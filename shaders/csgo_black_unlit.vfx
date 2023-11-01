@@ -31,6 +31,8 @@ COMMON
 
     #include "common/PerViewConstantBuffer_t.hlsl"
     #include "common/PerViewConstantBufferCsgo_t.hlsl"
+    
+    #include "common/vr_utils.hlsl"
 
     struct VS_INPUT
     {
@@ -39,6 +41,7 @@ COMMON
 
     struct PS_INPUT
     {
+        #include "common/pixelinput.hlsl"
     };
 
     struct PS_OUTPUT
@@ -54,118 +57,47 @@ VS
 
     #include "common/vertex.hlsl"
 
-    // SPIR-V source (4028), SPVC_BACKEND_HLSL reflection with SPIRV-Cross by KhronosGroup
-    // Source 2 Viewer 6.0.0.0 - https://valveresourceformat.github.io
-
-    cbuffer PerViewConstantBuffer_t : register(b15, space0)
-    {
-        column_major float4x4 g_matWorldToProjection : packoffset(c0);
-        float4 g_vClipPlane0 : packoffset(c17);
-        float4 g_vWorldToCameraOffset : packoffset(c33);
-    };
-
-    cbuffer PerViewConstantBufferCsgo_t : register(b18, space0)
-    {
-        float4 g_vHighPrecisionLightingOffsetWs : packoffset(c30);
-    };
-
-    ByteAddressBuffer _5815 : register(t30, space2);
-    ByteAddressBuffer _5203 : register(t32, space2);
-
-    static float4 gl_Position;
-    static float gl_ClipDistance[1];
-    static float3 _6017;
-    static float2 _5759;
-    static float4 _5837;
-    static uint _3984;
-    static float3 _3486;
-    static float3 _3487;
-    static float4 _3488;
-    static float4 _3490;
-    static float _3495;
-    static uint2 _5072;
-
-    struct SPIRV_Cross_Input
-    {
-        float3 _6017 : TEXCOORD0;
-        float2 _5759 : TEXCOORD1;
-        float4 _5837 : TEXCOORD2;
-        uint _3984 : TEXCOORD3;
-    };
-
-    struct SPIRV_Cross_Output
-    {
-        float3 _3486 : TEXCOORD0;
-        float3 _3487 : TEXCOORD1;
-        float4 _3488 : TEXCOORD2;
-        float4 _3490 : TEXCOORD3;
-        float _3495 : TEXCOORD4;
-        nointerpolation uint2 _5072 : TEXCOORD5;
-        float4 gl_Position : SV_Position;
-        float gl_ClipDistance0 : SV_ClipDistance0;
-    };
-
-    void vert_main()
-    {
-        _2265 _21981;
-        [unroll]
-        for (int _2ident = 0; _2ident < 8; _2ident++)
-        {
-            _21981._m0[_2ident] = _5203.Load(_2ident * 4 + _3984 * 32 + 0);
-        }
-        float3x4 _9586 = asfloat(uint3x4(_5815.Load4(_21981._m0[1] * 48 + 0), _5815.Load4(_21981._m0[1] * 48 + 16), _5815.Load4(_21981._m0[1] * 48 + 32)));
-        _2265 _13589;
-        [unroll]
-        for (int _3ident = 0; _3ident < 8; _3ident++)
-        {
-            _13589._m0[_3ident] = _5203.Load(_3ident * 4 + _3984 * 32 + 0);
-        }
-        float4 _22293 = float4(float((_13589._m0[0] >> 0u) & 255u), float((_13589._m0[0] >> 8u) & 255u), float((_13589._m0[0] >> 16u) & 255u), float(_13589._m0[0] >> 24u)) * 0.0039215688593685626983642578125f;
-        float3 _7940 = _22293.xyz;
-        float3 _20064 = _7940 * 0.077399380505084991455078125f.xxx;
-        float3 _24533 = pow(mad(_7940, 0.947867333889007568359375f.xxx, 0.0521326996386051177978515625f.xxx), 2.400000095367431640625f.xxx);
-        float3 _21918 = float3((_22293.x <= 0.040449999272823333740234375f) ? _20064.x : _24533.x, (_22293.y <= 0.040449999272823333740234375f) ? _20064.y : _24533.y, (_22293.z <= 0.040449999272823333740234375f) ? _20064.z : _24533.z);
-        float3 _21242 = mul(_9586, float4(_6017, 1.0f));
-        float4 _13745 = float4(_21242, 1.0f);
-        float4 _16057 = mul(g_matWorldToProjection, _13745 + (g_vWorldToCameraOffset * 1.0f));
-        float _19081 = dot(_13745, g_vClipPlane0);
-        _3486 = _21242 - g_vHighPrecisionLightingOffsetWs.xyz;
-        _3487 = normalize(mul(_9586, float4(_5837.xyz, 0.0f)));
-        _3488 = _5759.xyxy;
-        _3490 = float4(_21918.x, _21918.y, _21918.z, _22293.w);
-        _3495 = _19081;
-        _5072 = uint2(_13589._m0[3] & 65535u, (_13589._m0[4] >> 4u) & 511u);
-        _16057.y = -_16057.y;
-        gl_Position = _16057;
-        gl_ClipDistance[0u] = _19081;
-    }
-
-    SPIRV_Cross_Output main(SPIRV_Cross_Input stage_input)
-    {
-        _6017 = stage_input._6017;
-        _5759 = stage_input._5759;
-        _5837 = stage_input._5837;
-        _3984 = stage_input._3984;
-        vert_main();
-        SPIRV_Cross_Output stage_output;
-        stage_output.gl_Position = gl_Position;
-        stage_output.gl_ClipDistance0.x = gl_ClipDistance[0];
-        stage_output._3486 = _3486;
-        stage_output._3487 = _3487;
-        stage_output._3488 = _3488;
-        stage_output._3490 = _3490;
-        stage_output._3495 = _3495;
-        stage_output._5072 = _5072;
-        return stage_output;
-    }
-
-    // ---------  SPIRV -> HLSL end  ---------
-
-
+    /*
+        cbuffer PerViewConstantBuffer_t : register(b15, space0)
+        cbuffer PerViewConstantBufferCsgo_t : register(b18, space0)
+        ByteAddressBuffer g_transformBuffer : register(t30, space2);
+        ByteAddressBuffer g_instanceBuffer : register(t32, space2);
+    */
 
     BoolAttribute(CanBatchWithDynamicShaderConstants, true);
     BoolAttribute(SupportsAggregateInstancing, true);
 
+    PS_INPUT MainVs(VS_INPUT i)
+    {
+        PerInstancePackedShaderData_t instanceData;
+
+        [unroll]
+        for (int _2ident = 0; _2ident < 8; _2ident++)
+        {
+            instanceData.PackedData[_2ident] = g_instanceBuffer.Load(_2ident * 4 + i.nTransformBufferOffset * 32 + 0);
+        }
+    
+        float3x4 mTransform = asfloat(uint3x4(
+            g_transformBuffer.Load4(instanceData.PackedData[1] * 48 + 0),
+            g_transformBuffer.Load4(instanceData.PackedData[1] * 48 + 16),
+            g_transformBuffer.Load4(instanceData.PackedData[1] * 48 + 32)
+        ));
+    
+        InstanceData_t extraShaderData = DecodePackedInstanceData(instanceData);
+        float3 vTint = SrgbGammaToLinear(extraShaderData.vTint.xyz);
+
+        float3 vPositionWs = mul(mTransform, float4(i.vPositionOs, 1.0f));
+
+        PS_INPUT o;
+        o.vPositionPs = Position3WsToPs(vPositionWs);
+        o.vClip0.x = dot(float4(vPositionWs, 1.0), g_vClipPlane0);
+        o.vPositionWs = vPositionWs - g_vHighPrecisionLightingOffsetWs.xyz;
+        o.vNormalWs = normalize(mul(mTransform, float4(i.vNormalOs.xyz, 0.0f)));
+        o.vTextureCoords = i.vTexCoord.xyxy;
+        o.vVertexColor = float4(vTint.x, vTint.y, vTint.z, extraShaderData.vTint.w);
+        o.nView_something = uint2(instanceData.PackedData[3] & 0xFFFF, (instanceData.PackedData[4] >> 4u) & 0x1FF);
+        return o;
+    }
 }
 
 PS
@@ -204,87 +136,76 @@ PS
         uint g_bFogEnabled : packoffset(c0.z);
     };
 
-    cbuffer _1007_4459 : register(b1, space0)
+    cbuffer PerViewConstantBuffer_t : register(b1, space0)
     {
-        float3 _4459_m0 : packoffset(c19);
+        float3 g_vCameraPositionWs : packoffset(c19);
     };
 
-    cbuffer _2916_5037 : register(b4, space0)
+    cbuffer PerViewConstantBufferCsgo_t : register(b4, space0)
     {
-        float4 g_vHighPrecisionLightingOffsetWs : packoffset(c18);
-        float4 _5037_m1 : packoffset(c19);
-        float4 _5037_m2 : packoffset(c20);
-        float4 _5037_m3 : packoffset(c21);
-        float4 _5037_m4 : packoffset(c22);
-        float4 _5037_m5 : packoffset(c23);
-        column_major float4x4 _5037_m6 : packoffset(c24);
-        float4 _5037_m7 : packoffset(c28);
-        float4 _5037_m8 : packoffset(c29);
-        float4 _5037_m9 : packoffset(c30);
+        float4 g_vGradientFogBiasAndScale : packoffset(c18);
+        float4 m_vGradientFogExponents : packoffset(c19);
+        float4 g_vGradientFogColor_Opacity : packoffset(c20);
+        float4 g_vGradientFogCullingParams : packoffset(c21);
+        float4 g_vCubeFog_Offset_Scale_Bias_Exponent : packoffset(c22);
+        float4 g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip : packoffset(c23);
+        column_major float4x4 g_matvCubeFogSkyWsToOs : packoffset(c24);
+        float4 g_vCubeFogCullingParams_MaxOpacity : packoffset(c28);
+        float4 g_vCubeFog_ExposureBias : packoffset(c29);
+        float4 g_vHighPrecisionLightingOffsetWs : packoffset(c30);
     };
 
     SamplerState _4038 : register(s45, space0);
     TextureCube<float4> _5741 : register(t102, space0);
 
-    static float3 _5759;
-    static float4 _5482;
-
-    struct SPIRV_Cross_Input
-    {
-        float3 _5759 : TEXCOORD0;
-    };
-
-    struct SPIRV_Cross_Output
-    {
-        float4 _5482 : SV_Target0;
-    };
+    static float4 vColor;
 
     void frag_main()
     {
-        float3 _10061 = _5759 + _5037_m9.xyz;
+        float3 _10061 = vPositionWithOffsetWs + g_vHighPrecisionLightingOffsetWs.xyz;
         float4 _6805;
         // TODO: into fogging.hlsl
         if (g_bFogEnabled != 0u)
         {
             float _18390;
             float2 _21493;
-            float3 _18406 = _10061 - _4459_m0;
+            float3 _18406 = _10061 - g_vCameraPositionWs;
             float3 _22821;
             do
             {
                 _21493 = _18406.xy;
                 _18390 = _10061.z;
                 [branch]
-                if ((dot(_21493, _21493) > _5037_m3.x) && ((_18390 * _5037_m3.z) < _5037_m3.y))
+                if ((dot(_21493, _21493) > g_vGradientFogCullingParams.x) && ((_18390 * g_vGradientFogCullingParams.z) < g_vGradientFogCullingParams.y))
                 {
-                    float2 _21390 = clamp(mad(g_vHighPrecisionLightingOffsetWs.zw, float2(length(_21493), _18390), g_vHighPrecisionLightingOffsetWs.xy), 0.0f.xx, 1.0f.xx);
-                    float _11897 = (pow(_21390.x, _5037_m1.x) * pow(_21390.y, _5037_m1.y)) * _5037_m2.w;
-                    _22821 = lerp(0.0f.xxx, float4(_5037_m2.xyz, _11897).xyz, _11897.xxx);
+                    float2 _21390 = clamp(mad(g_vGradientFogBiasAndScale.zw, float2(length(_21493), _18390), g_vGradientFogBiasAndScale.xy), 0.0f.xx, 1.0f.xx);
+                    float _11897 = (pow(_21390.x, m_vGradientFogExponents.x) * pow(_21390.y, m_vGradientFogExponents.y)) * g_vGradientFogColor_Opacity.w;
+                    _22821 = lerp(0.0f.xxx, float4(g_vGradientFogColor_Opacity.xyz, _11897).xyz, _11897.xxx);
                     break;
                 }
                 _22821 = 0.0f.xxx;
                 break;
             } while(false);
-            float3 _22859;
+            float3 foggedColor;
             do
             {
-                if ((dot(_18406, _18406) > _5037_m7.x) && ((_5037_m7.z * _18390) < _5037_m7.y))
+                if ((dot(_18406, _18406) > g_vCubeFogCullingParams_MaxOpacity.x) && ((g_vCubeFogCullingParams_MaxOpacity.z * _18390) < g_vCubeFogCullingParams_MaxOpacity.y))
                 {
-                    float _16990 = clamp(pow(max(0.0f, mad(length(_21493), _5037_m4.y, _5037_m4.x)), _5037_m4.w), 0.0f, 1.0f) * clamp(pow(max(0.0f, mad(_18390, _5037_m5.y, _5037_m5.x)), _5037_m5.z), 0.0f, 1.0f);
-                    float _8437 = clamp(_16990, 0.0f, 1.0f) * _5037_m7.w;
-                    _22859 = lerp(_22821.xyz, float4((_5741.SampleLevel(_4038, normalize(mul(float4(_18406, 0.0f), _5037_m6).xyz), _5037_m5.w * clamp(mad(-_16990, _5037_m4.z, 1.0f), 0.0f, 1.0f)) * _5037_m8.x).xyz, _8437).xyz, _8437.xxx);
+                    float _16990 = clamp(pow(max(0.0f, mad(length(_21493), g_vCubeFog_Offset_Scale_Bias_Exponent.y, g_vCubeFog_Offset_Scale_Bias_Exponent.x)), g_vCubeFog_Offset_Scale_Bias_Exponent.w), 0.0f, 1.0f) * clamp(pow(max(0.0f, mad(_18390, g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.y, g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.x)), g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.z), 0.0f, 1.0f);
+                    float _8437 = clamp(_16990, 0.0f, 1.0f) * g_vCubeFogCullingParams_MaxOpacity.w;
+                    foggedColor = lerp(_22821.xyz, float4((_5741.SampleLevel(_4038, normalize(mul(float4(_18406, 0.0f), g_matvCubeFogSkyWsToOs).xyz), g_vCubeFog_Height_Offset_Scale_Exponent_Log2Mip.w * clamp(mad(-_16990, g_vCubeFog_Offset_Scale_Bias_Exponent.z, 1.0f), 0.0f, 1.0f)) * g_vCubeFog_ExposureBias.x).xyz, _8437).xyz, _8437.xxx);
                     break;
                 }
-                _22859 = _22821.xyz;
+                foggedColor = _22821.xyz;
                 break;
             } while(false);
-            _6805 = float4(_22859.x, _22859.y, _22859.z, float4(0.0f, 0.0f, 0.0f, 1.0f).w);
+            _6805 = float4(foggedColor.x, foggedColor.y, foggedColor.z, 1.0f);
         }
         else
         {
             _6805 = float4(0.0f, 0.0f, 0.0f, 1.0f);
         }
-        _5482 = _6805;
+        vColor = _6805;
     }
 
     PS_OUTPUT MainPs(PS_INPUT i)

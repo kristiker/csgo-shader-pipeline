@@ -10,8 +10,8 @@ cbuffer PerViewConstantBuffer_t : register(b15, space0)
     float g_flInvToneMapScalarLinear : packoffset(c18.y);
     float g_fInvViewportZRange : packoffset(c18.z);
     float g_fMinViewportZScaled : packoffset(c18.w);
-    float3 g_vCameraPositionWs;
-    float g_flViewportMinZ ;
+    float3 g_vCameraPositionWs : packoffset(c19);
+    float g_flViewportMinZ : packoffset(c19.w);
     float3 g_vCameraDirWs;
     float g_flViewportMaxZ;
     float3 g_vCameraUpDirWs;
