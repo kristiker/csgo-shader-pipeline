@@ -18,6 +18,21 @@
             "stopAtEntry": false
         },
         {
+            "name": "Fast Vfx Csgo",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/Debug/net7.0/win-x64/vfx_csgo.exe",
+            "args": [
+                "${workspaceFolder}/../../shaders/csgo_black_unlit.vfx",
+                "-vs",
+                "-hlsl_preprocessed_out",
+                "a",
+            ],
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
             "name": ".NET Core Attach",
             "type": "coreclr",
             "request": "attach"

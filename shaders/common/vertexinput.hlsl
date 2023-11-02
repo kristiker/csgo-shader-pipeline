@@ -5,7 +5,7 @@ float2 vTexCoord : TEXCOORD0 < Semantic( LowPrecisionUv ); >;
 
 #if (D_COMPRESSED_NORMALS_AND_TANGENTS == 0)
     float3 vNormalOs                  : NORMAL  < Semantic( Normal ); >;
-    float3 vTangentUOs_flTangentVSign : TANGENT < Semantic( TangentU_SignV ); >;
+    float4 vTangentUOs_flTangentVSign : TANGENT < Semantic( TangentU_SignV ); >;
 #elif (D_COMPRESSED_NORMALS_AND_TANGENTS == 1)
     uint vNormalOs  : NORMAL < Semantic( PackedFrame ); >;
 #endif

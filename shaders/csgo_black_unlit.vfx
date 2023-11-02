@@ -46,12 +46,13 @@ COMMON
     {
         float4 vColor : SV_Target0;
     };
+
+    StaticCombo( S_MOLTEN_VK, 0..1, Sys(VULKAN && MACOS));
+    StaticCombo( S_MODE_TOOLS_VIS, 0..1, Sys(ALL));
 }
 
 VS
 {
-    StaticCombo( S_MOLTEN_VK, 0..1 );
-    StaticCombo( S_MODE_TOOLS_VIS, 0..1 );
 
     #include "common/vertex.hlsl"
 
@@ -72,17 +73,16 @@ VS
         [unroll]
         for (int _2ident = 0; _2ident < 8; _2ident++)
         {
-            instanceData.PackedData[_2ident] = g_instanceBuffer.Load(_2ident * 4 + i.nTransformBufferOffset * 32 + 0);
+            instanceData.m_Data[_2ident] = g_instanceBuffer.Load(_2ident * 4 + i.nTransformBufferOffset * 32 + 0);
         }
     
         float3x4 mTransform = asfloat(uint3x4(
-            g_transformBuffer.Load4(instanceData.PackedData[1] * 48 + 0),
-            g_transformBuffer.Load4(instanceData.PackedData[1] * 48 + 16),
-            g_transformBuffer.Load4(instanceData.PackedData[1] * 48 + 32)
+            g_transformBuffer.Load4(instanceData.m_Data[1] * 48 + 0),
+            g_transformBuffer.Load4(instanceData.m_Data[1] * 48 + 16),
+            g_transformBuffer.Load4(instanceData.m_Data[1] * 48 + 32)
         ));
     
         InstanceData_t extraShaderData = DecodePackedInstanceData(instanceData);
-        float3 vTint = SrgbGammaToLinear(extraShaderData.vTint.xyz);
         float3 vPositionWs = mul(mTransform, float4(i.vPositionOs, 1.0f));
 
         PS_INPUT o;
@@ -91,17 +91,14 @@ VS
         o.vPositionWs = vPositionWs - g_vHighPrecisionLightingOffsetWs.xyz;
         o.vNormalWs = normalize(mul(mTransform, float4(i.vNormalOs.xyz, 0.0f)));
         o.vTextureCoords = i.vTexCoord.xyxy;
-        o.vVertexColor = float4(vTint.x, vTint.y, vTint.z, extraShaderData.vTint.w);
-        o.nView_something = uint2(instanceData.PackedData[3] & 0xFFFF, (instanceData.PackedData[4] >> 4u) & 0x1FF);
+        o.vVertexColor = float4(SrgbGammaToLinear(extraShaderData.vTint.xyz), extraShaderData.vTint.w);
+        o.nView_something = uint2(instanceData.m_Data[3] & 0xFFFF, (instanceData.m_Data[4] >> 4u) & 0x1FF);
         return o;
     }
 }
 
 PS
 {
-    StaticCombo( S_MOLTEN_VK, 0..1 );
-    StaticCombo( S_MODE_TOOLS_VIS, 0..1 );
-
     RenderState(BackStencilFunc, F_RENDER_BACKFACES ? 5 : 7);
     RenderState(CullMode, (F_RENDER_BACKFACES || exists(UNKNOWN[2f61b340])) ? 0 : 1);
     RenderState(DepthEnable, F_DISABLE_Z_BUFFERING ? 0 : 1);
@@ -115,8 +112,8 @@ PS
     bool g_bIsDeprecated < Attribute("bIsDeprecated"); UiType(CheckBox); >;
     float g_fToolsVisHeightTint < Attribute("g_fToolsVisHeightTint"); UiType(Slider); >;
     float g_fToolsVisMaxHeightRange < Default(1); Attribute("g_fToolsVisMaxHeightRange"); UiType(Slider); >;
-    ExternalDescriptorSet g_globalLateBoundBindlessSet < Attribute("g_globalLateBoundBindlessSet"); >;
-    ExternalDescriptorSet g_lightBinnerGpuSet < Attribute("g_lightBinnerGpuSet"); >;
+    //ExternalDescriptorSet g_globalLateBoundBindlessSet < Attribute("g_globalLateBoundBindlessSet"); >;
+    //ExternalDescriptorSet g_lightBinnerGpuSet < Attribute("g_lightBinnerGpuSet"); >;
     int g_nToolsVisMode < Attribute("g_nToolsVisMode"); UiType(Slider); >;
     float3 g_vFlatOverlayColor < Default2(1, 0); Attribute("FlatOverlayColor"); UiType(VectorText); >;
     float4 g_vShaderIDColor < UiType(VectorText); >;

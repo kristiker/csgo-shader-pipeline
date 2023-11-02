@@ -6,12 +6,12 @@ cbuffer PerViewConstantBuffer_t : register(b15, space0)
     column_major float4x4 g_matViewToProjection  : packoffset(c12);
     float4 g_vInvProjRow3 : packoffset(c16);
     float4 g_vClipPlane0 : packoffset(c17);
-    float g_flToneMapScalarLinear : packoffset(c18.x);
-    float g_flInvToneMapScalarLinear : packoffset(c18.y);
-    float g_fInvViewportZRange : packoffset(c18.z);
-    float g_fMinViewportZScaled : packoffset(c18.w);
+    float g_flToneMapScalarLinear : packoffset(c18);
+    float g_flInvToneMapScalarLinear;
+    float g_fInvViewportZRange;
+    float g_fMinViewportZScaled;
     float3 g_vCameraPositionWs : packoffset(c19);
-    float g_flViewportMinZ : packoffset(c19.w);
+    float g_flViewportMinZ;
     float3 g_vCameraDirWs;
     float g_flViewportMaxZ;
     float3 g_vCameraUpDirWs;

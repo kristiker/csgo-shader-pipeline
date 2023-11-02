@@ -5,7 +5,7 @@ struct TransformData_t
 
 struct PerInstancePackedShaderData_t
 {
-    uint PackedData[8];
+    uint m_Data[8];
 };
 
 StructuredBuffer<TransformData_t> g_transformBuffer : register(t30, space2) < Attribute("TransformBuffer"); >;
