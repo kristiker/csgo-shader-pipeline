@@ -1,7 +1,7 @@
 
-// CreateTexture2DInRegisterWithoutSampler(g_tFogCubeTexture, 102) < Attribute("CubemapFogTexture"); SrgbRead(true); >;
-SamplerState g_tFogCubeTexture_s : register(s45, space0);
-TextureCube<float4> g_tFogCubeTexture : register(t102, space0);
+//CreateAttributeTexture2D(g_tFogCubeTexture) : register(t102) < Attribute("CubemapFogTexture"); SrgbRead(true); >;
+SamplerState g_tFogCubeTexture_s;
+TextureCube<float4> g_tFogCubeTexture : register(t102) < Attribute("CubemapFogTexture"); SrgbRead(true); >;
 
 void ApplyFog(inout float3 pixelColor, float3 vPositionWs)
 {

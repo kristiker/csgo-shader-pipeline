@@ -55,6 +55,7 @@ VS
 {
 
     #include "common/vertex.hlsl"
+    //#include "common/instancing.hlsl"
 
     /*
         cbuffer PerViewConstantBuffer_t : register(b15, space0)
@@ -68,21 +69,11 @@ VS
 
     PS_INPUT MainVs(VS_INPUT i)
     {
-        PerInstancePackedShaderData_t instanceData;
-
-        [unroll]
-        for (int _2ident = 0; _2ident < 8; _2ident++)
-        {
-            instanceData.m_Data[_2ident] = g_instanceBuffer.Load(_2ident * 4 + i.nTransformBufferOffset * 32 + 0);
-        }
-    
-        float3x4 mTransform = asfloat(uint3x4(
-            g_transformBuffer.Load4(instanceData.m_Data[1] * 48 + 0),
-            g_transformBuffer.Load4(instanceData.m_Data[1] * 48 + 16),
-            g_transformBuffer.Load4(instanceData.m_Data[1] * 48 + 32)
-        ));
-    
+        PerInstancePackedShaderData_t instanceData = g_instanceBuffer[i.nTransformBufferOffset];
         InstanceData_t extraShaderData = DecodePackedInstanceData(instanceData);
+        uint instanceTransformOffset = instanceData.m_Data[1]; // why is vs attribute called transform offset?
+
+        float3x4 mTransform = g_transformBuffer[instanceTransformOffset].mTransform;
         float3 vPositionWs = mul(mTransform, float4(i.vPositionOs, 1.0f));
 
         PS_INPUT o;
@@ -100,7 +91,7 @@ VS
 PS
 {
     RenderState(BackStencilFunc, F_RENDER_BACKFACES ? 5 : 7);
-    RenderState(CullMode, (F_RENDER_BACKFACES || exists(UNKNOWN[2f61b340])) ? 0 : 1);
+    RenderState(CullMode, F_RENDER_BACKFACES ? 0 : 1);
     RenderState(DepthEnable, F_DISABLE_Z_BUFFERING ? 0 : 1);
     RenderState(DepthWriteEnable, F_DISABLE_Z_BUFFERING ? 0 : 1);
     RenderState(StencilEnable, 1);
@@ -137,7 +128,7 @@ PS
 
     PS_OUTPUT MainPs(PS_INPUT i)
     {
-        float3 vPositionWs = vPositionWithOffsetWs + g_vHighPrecisionLightingOffsetWs.xyz;
+        float3 vPositionWs = i.vPositionWithOffsetWs + g_vHighPrecisionLightingOffsetWs.xyz;
         float4 outColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
         PS_OUTPUT o;
