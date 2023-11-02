@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
@@ -106,27 +107,32 @@ if (compileProcess == null)
     return -1;
 }
 
-var writeQueueSemaphore = new SemaphoreSlim(1, 1);
+var vfxcOutput = new ConcurrentQueue<string>();
 compileProcess.OutputDataReceived += (sender, e) =>
 {
     if (e.Data is null)
         return;
 
-    writeQueueSemaphore.AvailableWaitHandle.WaitOne();
-    Console.WriteLine(e.Data.Replace(shaderFileName, vfxFilePath));
+    vfxcOutput.Enqueue(e.Data.Replace(shaderFileName, vfxFilePath));
 };
 compileProcess.ErrorDataReceived += (sender, e) =>
 {
     if (e.Data is null)
         return;
 
-    writeQueueSemaphore.AvailableWaitHandle.WaitOne();
-    Console.Error.WriteLine(e.Data.Replace(shaderFileName, vfxFilePath));
+    vfxcOutput.Enqueue(e.Data.Replace(shaderFileName, vfxFilePath));
 };
 
 compileProcess.BeginOutputReadLine();
 compileProcess.BeginErrorReadLine();
 compileProcess.WaitForExit();
+
+foreach (var line in vfxcOutput)
+{
+    Console.WriteLine(line);
+}
+
+Console.WriteLine($"{vfxFilePath} -- Done.");
 return compileProcess.ExitCode;
 
 partial class Program
