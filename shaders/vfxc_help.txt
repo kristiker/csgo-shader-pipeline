@@ -1,0 +1,39 @@
+//---------------------------------------------------------------------------//
+// VFXC - Valve FXC Wrapper (64-bit) ( Build: Oct 31 2023 01:31:11 )         //
+// Copyright (c) Valve Corporation, All rights reserved.                     //
+// Command: vfxc.exe                                                         //
+//   Usage: vfxc <file.vfx> [options] [COMBO=n]                              //
+
+   Options:
+      -XX: Shader model -50 -60 -60_vk
+      -vs: Compile Vertex Shader Only
+      -ps: Compile Pixel Shader Only
+      -gs: Compile Geometry Shader Only
+      -hs: Compile Hull Shader Only
+      -ds: Compile Domain Shader Only
+      -cs: Compile Compute Shader Only
+      -vsout: Output cleaned up VFX->VS
+      -psout: Output cleaned up VFX->PS
+      -gsout: Output cleaned up VFX->GS
+      -hsout: Output cleaned up VFX->HS
+      -dsout: Output cleaned up VFX->DS
+      -csout: Output cleaned up VFX->CS
+      -binout: Output bytecode object file from FXC
+      -shaderinfo: Output compiled shader info
+      -stats: See stats for a given shader
+      -d: Compile shader with debug info
+      -v: Verbose mode
+      -vulkan: Compile for Vulkan
+      -ios_vulkan: Compile for iOS Vulkan
+      -android_vulkan: Compile for Android Vulkan
+      -vulkanout <filename>: Output SPIRV to <filename> (only works with -vulkan)
+      -hlsl_out <filename>: Output HLSL to <filename>
+      -hlsl_preprocessed_out <filename>: Output Preprocessed HLSL to <filename>
+
+      -rga: Output Radeon GPU Analysis (Vulkan-only)
+   Examples:
+      vfxc.exe test.vfx
+      vfxc.exe test.vfx -vs
+      vfxc.exe test.vfx S_BUMP_MAP D_SKINNING
+      vfxc.exe test.vfx S_BUMP_MAP=1 D_SKINNING=2
+      vfxc.exe test.vfx -30 -ps S_BUMP_MAP D_SKINNING
