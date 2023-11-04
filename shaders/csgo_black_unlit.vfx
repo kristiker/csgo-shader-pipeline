@@ -80,7 +80,12 @@ VS
         o.vPositionPs = Position3WsToPs(vPositionWs);
         o.vClip0.x = dot(float4(vPositionWs, 1.0), g_vClipPlane0);
         o.vPositionWs = vPositionWs - g_vHighPrecisionLightingOffsetWs.xyz;
-        o.vNormalWs = normalize(mul(mTransform, float4(i.vNormalOs.xyz, 0.0f)));
+        
+        float3 vNormalOs;
+        float4 vTangentUOs_flTangentVSign;
+        VS_DecodeObjectSpaceNormalAndTangent(i, vNormalOs, vTangentUOs_flTangentVSign);
+
+        o.vNormalWs = normalize(mul(mTransform, float4(vNormalOs, 0.0f)));
         o.vTextureCoords = i.vTexCoord.xyxy;
         o.vVertexColor = float4(SrgbGammaToLinear(extraShaderData.vTint.xyz), extraShaderData.vTint.w);
         o.nView_something = uint2(instanceData.m_Data[3] & 0xFFFF, (instanceData.m_Data[4] >> 4u) & 0x1FF);

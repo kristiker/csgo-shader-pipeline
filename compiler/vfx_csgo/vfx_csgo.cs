@@ -22,6 +22,7 @@ while (root!.Name != "compiler")
 }
 
 var vfxc = Path.Combine(root.FullName, "bin/win64/vfxc.exe");
+var vfxcompile = Path.Combine(root.FullName, "bin/win64/vfxcompile.exe");
 var core = Path.Combine(root.FullName, "core");
 
 vfxFilePath = Path.GetFullPath(vfxFilePath);

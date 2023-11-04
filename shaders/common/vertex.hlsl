@@ -10,6 +10,8 @@ void VS_DecodeObjectSpaceNormalAndTangent(VS_INPUT i, out float3 vNormalOs, out 
         vNormalOs = i.vNormalOs;
         vTangentUOs_flTangentVSign = i.vTangentUOs_flTangentVSign;
     #elif (D_COMPRESSED_NORMALS_AND_TANGENTS == 1)
+        vNormalOs = float3(0, 0, 0);
+        vTangentUOs_flTangentVSign = float4(0, 0, 0, 0);
         //DecodeNormalTangent(i.vNormalOs);
     #endif
 }
