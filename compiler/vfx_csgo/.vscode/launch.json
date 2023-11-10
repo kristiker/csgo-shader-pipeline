@@ -28,6 +28,7 @@
                 //"-shaderinfo",
                 "-50",
                 "-vulkan",
+                "-f",
                 //"-stats",
                 //"-hlsl_preprocessed_out",
                 //"out.hlsl",

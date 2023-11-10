@@ -6,7 +6,7 @@ var vfxFilePath = args.FirstOrDefault();
 
 if (string.IsNullOrEmpty(vfxFilePath) || !File.Exists(vfxFilePath))
 {
-    Console.WriteLine("Please provide a path to a .vfx file.");
+    Console.WriteLine("Please provide a path to a .vfx file as the first argument.");
     return -1;
 }
 
@@ -29,6 +29,7 @@ vfxFilePath = Path.GetFullPath(vfxFilePath);
 var shaders = Directory.GetParent(vfxFilePath);
 
 Debug.Assert(File.Exists(vfxc), vfxc);
+Debug.Assert(File.Exists(vfxcompile), "Mass compiler files are missing. Please install vfxcompile.exe & co.");
 Debug.Assert(Directory.Exists(core), core);
 Debug.Assert(shaders?.Name == "shaders", shaders?.Name);
 
@@ -39,56 +40,29 @@ var shadersPath = Path.Combine(core, "shaders");
 Directory.CreateDirectory(shadersPath);
 foreach (var file in Directory.GetFiles(shaders!.FullName, "*.*", SearchOption.AllDirectories))
 {
-    bool fixupIncludes = false;
     var relativePath = Path.GetRelativePath(shaders.FullName, file);
     var destinationPath = Path.Combine(shadersPath, relativePath);
 
     if (destinationPath.EndsWith(".vfx"))
     {
         destinationPath = destinationPath[..^4] + ".shader";
-        fixupIncludes = false;
 
+        // Not the most reliable path equality check.
         if (file.Equals(vfxFilePath))
         {
-            //fixupIncludes = true;
             shaderFileName = destinationPath;
         };
     }
 
     Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
     File.Copy(file, destinationPath, true);
-
-    if (fixupIncludes)
-    {
-        var lines = File.ReadAllLines(destinationPath);
-        for (int i = 0; i < lines.Length; i++)
-        {
-            var match = IncludeDirective().Match(lines[i]);
-            if (match.Success)
-            {
-                var includePath = match.Groups[1].Value;
-
-                if (includePath.EndsWith(".fxc"))
-                {
-                    continue;
-                }
-
-                var fullPath = Path.GetFullPath(Path.Combine(shadersPath, includePath));
-
-                // substitute relative include with full path
-                lines[i] = lines[i].Replace(includePath, fullPath);
-            }
-        }
-
-        File.WriteAllLines(destinationPath, lines);
-    }
 }
 
 Debug.Assert(shaderFileName != null);
 
 var startInfo = new ProcessStartInfo
 {
-    FileName = vfxc,
+    FileName = vfxcompile,
     ArgumentList = { shaderFileName, "-v" },
     WorkingDirectory = core,
     UseShellExecute = false,
@@ -109,35 +83,56 @@ if (compileProcess == null)
 }
 
 var vfxcOutput = new ConcurrentQueue<string>();
-compileProcess.OutputDataReceived += (sender, e) =>
+DataReceivedEventHandler eventHandler = (sender, e) =>
 {
     if (e.Data is null)
         return;
 
-    vfxcOutput.Enqueue(e.Data.Replace(shaderFileName, vfxFilePath));
+    vfxcOutput.Enqueue(e.Data);
 };
-compileProcess.ErrorDataReceived += (sender, e) =>
-{
-    if (e.Data is null)
-        return;
-
-    vfxcOutput.Enqueue(e.Data.Replace(shaderFileName, vfxFilePath));
-};
+compileProcess.OutputDataReceived += eventHandler;
+compileProcess.ErrorDataReceived += eventHandler;
 
 compileProcess.BeginOutputReadLine();
 compileProcess.BeginErrorReadLine();
 compileProcess.WaitForExit();
 
+var suceeded = false;
+vfxFilePath = vfxFilePath.AsPosixPath();
+
 foreach (var line in vfxcOutput)
 {
-    Console.WriteLine(line);
+    if (line.Contains("1 succeeded, 0 failed, 0 up-to-date"))
+    {
+        suceeded = true;
+    }
+
+    Console.WriteLine(line.Replace(shaderFileName, vfxFilePath)
+                          .Replace(shaderFileName.AsPosixPath(), vfxFilePath));
 }
 
 Console.WriteLine($"{vfxFilePath} -- Done.");
+
+if (suceeded)
+{
+    var compiledShaderPath = shaderFileName + "_c";
+    Debug.Assert(File.Exists(compiledShaderPath), $"Compiled shader file {compiledShaderPath} is missing.");
+
+    Console.WriteLine($"Resulting file: {compiledShaderPath}");
+}
+
 return compileProcess.ExitCode;
 
 partial class Program
 {
     [GeneratedRegex("#include\\s+\"(.+)\"")]
     private static partial Regex IncludeDirective();
+}
+
+public static class StringExtensions
+{
+    public static string AsPosixPath(this string path)
+    {
+        return path.Replace("\\", "/");
+    }
 }

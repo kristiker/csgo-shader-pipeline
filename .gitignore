@@ -1,4 +1,9 @@
 
+compiler/.source2/
+compiler/bin/*
+!compiler\bin\win64\filesystem_stdio.dll
+# etc binaries from commit e486b17d51a451d4cb1b736b0cf649addde63944, add to whitelist if updating
+
 compiler/vfx_csgo/obj/*
 compiler/vfx_csgo/bin/*
 compiler/vfx_csgo/vfx_csgo.exe
